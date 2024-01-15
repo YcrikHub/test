@@ -8,11 +8,20 @@ const app = express();
 const port = 8000;
 
 const largeImages = [
-    'https://media.discordapp.net/attachments/1155965892853760030/1155966123930558464/R.gif?ex=6580ad58&is=656e3858&hm=157c30a12a1d12f8ecbd0928be3f74b86d80ca39bad1693175ccfa4e3d9bb801&=',
-    'https://media.discordapp.net/attachments/1155965892853760030/1155966048340803675/81a6b64add5ddd7ae31a508eadc91be6.gif?ex=6580ad46&is=656e3846&hm=c03c97a58038a0e67b3711002f4e9b4b27df96c5cbd7704b009b0011e9c5baa9&=',
-    'https://media.discordapp.net/attachments/1155965892853760030/1156600069752115221/e01a354a45f835fba2448f65a5c7a7f5.gif?ex=6582fbc1&is=657086c1&hm=3b4e9ea2780e3909d8bf67fe5dadd56b2eff69b3cf2371d622cdf328a1c82b8d&=',
+    'https://media.discordapp.net/attachments/1194049228209659986/1196449329221738589/ay.gif?ex=65b7ab45&is=65a53645&hm=29e4f27f73cfeaf147d36b1dd8080365e62b23c22ee79515f6df0c0901105635&=',
+    'https://media.discordapp.net/attachments/1194049228209659986/1196449329834119298/what.gif?ex=65b7ab45&is=65a53645&hm=34633838e4a6264cc8d52034c8ab6d42c02809f10d49723543cd6769e16869dd&=',
+    'https://media.discordapp.net/attachments/1194049228209659986/1196449330459058259/wat.gif?ex=65b7ab45&is=65a53645&hm=12ae87b9b9c8192a4d54ca73a313760ada793d350bcf3465954ed721b0720635&=',
     // Add more large image URLs as needed
 ];
+
+const stateTexts = [
+    '「 เเจกซอสเม็ดม่วงเข้ามาที่ดิส! 」',
+    '「 Made By QuartaoDev! 」',
+    '「 รับรันเม็ดม่วง 24ชม. 30 บาท! 」',
+    // Add more state texts as needed
+];
+
+let currentStateIndex = 0; // Index to track the current state text
 
 let currentLargeImageIndex = 0;
 
@@ -32,21 +41,21 @@ client.on("ready", async () => {
         const r = new Discord.RichPresence()
             .setApplicationId('1121867777867788309')
             .setType('STREAMING')
-            .setState('เอาเม็ดม่วงฟรีๆ เขามาดิส')
-            .setName('เม็ดม่วง By FL CLUB')
-            .setDetails(` 〈⏰${currentTime}〉 «» 〈${client.user.username}〉 `)
+            .setState(stateTexts[currentStateIndex])
+            .setName('👾 รับรันเม็ดม่วง 24ชม. 30 บาท')
+            .setDetails(` ﹝ ⌚${currentTime} | 👻${client.user.username} ﹞ `)
             .setStartTimestamp(startedAt)
-            .setAssetsLargeText(`〈${currentDate}〉|〈🛸 0 m/s〉`)
+            .setAssetsLargeText(`﹝ 📅 ${currentDate}  |  🛸 0 m/s ﹞`)
             .setAssetsLargeImage(largeImages[currentLargeImageIndex])
-            .setAssetsSmallImage('https://media.discordapp.net/attachments/1155965892853760030/1155966123439837184/moon.gif?ex=6580ad58&is=656e3858&hm=a5a5c9a5e8c9e50bc1919ffc6a59aa1abc569be71ae60a1d44bb736d26c0b732&=')
+            .setAssetsSmallImage('https://media.discordapp.net/attachments/1194049228209659986/1196449770860978206/asdasd.gif?ex=65b7abae&is=65a536ae&hm=400412b18c2128492b8cf1ef2ee2a1368d0dd52fb80d5909ff7acbd1886592c4&=')
             .setAssetsSmallText('เม็ดม่วง By Fl Club')
             .addButton('เข้าดิส', 'https://discord.gg/fakelinkclub')
 
         client.user.setActivity(r);
 
-        // Move to the next large image in the array
-        currentLargeImageIndex = (currentLargeImageIndex + 1) % largeImages.length;
-    }, 1000); // Change large image every 5 seconds
+      currentLargeImageIndex = (currentLargeImageIndex + 1) % largeImages.length;
+      currentStateIndex = (currentStateIndex + 1) % stateTexts.length;
+    }, 1000); // Change large image and state text every 1 second
 });
 
 function getCurrentDate() {
