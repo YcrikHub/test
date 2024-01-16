@@ -47,7 +47,6 @@ client.on("ready", async () => {
             .setStartTimestamp(startedAt)
             .setAssetsLargeText(`﹝ 📅 ${currentDate}  |  🛸 0 m/s ﹞`)
             .setAssetsLargeImage(largeImages[currentLargeImageIndex])
-            .setAssetsSmallImage('https://media.discordapp.net/attachments/1194049228209659986/1196449770860978206/asdasd.gif?ex=65b7abae&is=65a536ae&hm=400412b18c2128492b8cf1ef2ee2a1368d0dd52fb80d5909ff7acbd1886592c4&=')
             .setAssetsSmallText('เม็ดม่วง By Fl Club')
             .addButton('เข้าดิส', 'https://discord.gg/fakelinkclub')
 
