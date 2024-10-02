@@ -1,74 +1,139 @@
-const Discord = require("discord.js-selfbot-v13");
 const { Client } = require('discord.js-selfbot-v13');
-const client = new Discord.Client({
-    checkUpdate: false
-});
-const express = require('express')
+const fs = require('fs');
+const express = require('express');
 const app = express();
-const port = 8000;
+const path = './coinflipData.json'; // File path for storing bet value and coinflip count
 
-const largeImages = [
-    'https://media.discordapp.net/attachments/1194049228209659986/1196449329221738589/ay.gif?ex=65b7ab45&is=65a53645&hm=29e4f27f73cfeaf147d36b1dd8080365e62b23c22ee79515f6df0c0901105635&=',
-    'https://media.discordapp.net/attachments/1194049228209659986/1196449329834119298/what.gif?ex=65b7ab45&is=65a53645&hm=34633838e4a6264cc8d52034c8ab6d42c02809f10d49723543cd6769e16869dd&=',
-    'https://media.discordapp.net/attachments/1194049228209659986/1196449330459058259/wat.gif?ex=65b7ab45&is=65a53645&hm=12ae87b9b9c8192a4d54ca73a313760ada793d350bcf3465954ed721b0720635&=',
-    // Add more large image URLs as needed
-];
+// Initialize the Discord self-bot client
+const client = new Client();
+const port = 8000; // Define the port for the Express server
 
-const stateTexts = [
-    '「 เเจกซอสเม็ดม่วงเข้ามาที่ดิส! 」',
-    '「 Made By QuartaoDev! 」',
-    '「 รับรันเม็ดม่วง 24ชม. 30 บาท! 」',
-    // Add more state texts as needed
-];
+// ANSI escape codes for text colors
+const colors = {
+    reset: "\x1b[0m",
+    red: "\x1b[31m",
+    green: "\x1b[32m",
+    yellow: "\x1b[33m",
+    magenta: "\x1b[34m",
+    cyan: "\x1b[36m",
+};
 
-let currentStateIndex = 0; // Index to track the current state text
+// Function to save bet value and coinflip count to a file
+function saveCoinflipData(betValue, coinflipCount) {
+    const data = { betValue, coinflipCount };
+    fs.writeFileSync(path, JSON.stringify(data, null, 2));
+}
 
-let currentLargeImageIndex = 0;
+// Function to load bet value and coinflip count from the file
+function loadCoinflipData(defaultBetValue, defaultCoinflipCount) {
+    if (fs.existsSync(path)) {
+        const data = fs.readFileSync(path);
+        const parsed = JSON.parse(data);
+        return {
+            betValue: parsed.betValue || defaultBetValue,
+            coinflipCount: parsed.coinflipCount || defaultCoinflipCount
+        };
+    }
+    return { betValue: defaultBetValue, coinflipCount: defaultCoinflipCount };
+}
 
-app.get('/', (req, res) => res.send('ทำงานเรียบร้อยแล้ว'))
-app.listen(port, () =>
-    console.log(`Your app is listening at http://localhost:${port}`)
-);
+// Load saved data (betValue and coinflipCount), or set defaults
+const { betValue: initialBetValue, coinflipCount: defaultCoinflipCount } = loadCoinflipData(1, 100); // Default bet: 1, coinflipCount: 100
 
-client.on("ready", async () => {
-    var startedAt = Date.now();
-    console.log(`${client.user.username} เม็ดม่วงทำงานเรียบร้อยแล้ว !`);
+let currentBetValue = initialBetValue; // Initialize current bet value
+let currentCoinflipCount = defaultCoinflipCount; // Initialize coinflip count
 
-    setInterval(() => {
-        const currentTime = getCurrentTime();
-        const currentDate = getCurrentDate();
+// Set up Express.js to serve static HTML
+app.use(express.static('public')); // Serve static files from a public directory
 
-        const r = new Discord.RichPresence()
-            .setApplicationId('1121867777867788309')
-            .setType('STREAMING')
-            .setState(stateTexts[currentStateIndex])
-            .setName('👾 รับรันเม็ดม่วง 24ชม. 30 บาท')
-            .setDetails(` ﹝ ⌚${currentTime} | 👻${client.user.username} ﹞ `)
-            .setStartTimestamp(startedAt)
-            .setAssetsLargeText(`﹝ 📅 ${currentDate}  |  🛸 0 m/s ﹞`)
-            .setAssetsLargeImage(largeImages[currentLargeImageIndex])
-            .setAssetsSmallText('เม็ดม่วง By Fl Club')
-            .addButton('เข้าดิส', 'https://discord.gg/fakelinkclub')
-
-        client.user.setActivity(r);
-
-      currentLargeImageIndex = (currentLargeImageIndex + 1) % largeImages.length;
-      currentStateIndex = (currentStateIndex + 1) % stateTexts.length;
-    }, 1000); // Change large image and state text every 1 second
+app.get('/', (req, res) => {
+    res.send(`
+        <html>
+        <head>
+            <title>Coinflip Bot Status</title>
+            <style>
+                body { font-family: Arial, sans-serif; background-color: #282c34; color: white; }
+                h1 { text-align: center; }
+                .status { text-align: center; }
+                .data { font-size: 20px; }
+            </style>
+        </head>
+        <body>
+            <h1>Coinflip Bot Status</h1>
+            <div class="status">
+                <div class="data">Current Bet Value: ${currentBetValue}</div>
+                <div class="data">Coinflip Count: ${currentCoinflipCount}</div>
+            </div>
+        </body>
+        </html>
+    `);
 });
 
-function getCurrentDate() {
-    const a = new Date(Date.now());
-    const c = { timeZone: "Asia/Bangkok", day: "2-digit", month: "2-digit", year: "numeric" };
-    const formattedDate = a.toLocaleDateString("en-US", c);
-    const [month, day, year] = formattedDate.split('/');
-    return `${day}/${month}/${year}`;
-}
+app.listen(port, () => {
+    console.log(`Your app is listening at http://localhost:${port}`);
+});
 
-function getCurrentTime() {
-    const a = new Date(Date.now());
-    const c = { timeZone: "Asia/Bangkok", hour: "numeric", minute: "numeric", hour12: false };
-    return a.toLocaleTimeString("th-TH", c);
-}
+// Discord bot ready event
+client.on('ready', () => {
+    console.log(`${colors.magenta}>  User : ${client.user.tag}\n${colors.reset}`);
+
+    const userId = '1275024063684935700'; // Replace with the actual user ID
+    const user = client.users.cache.get(userId);
+
+    if (user) {
+        user.createDM()
+            .then(dmChannel => {
+                // Function to get balance
+                const checkBalance = async () => {
+                    try {
+                        const balanceResponse = await dmChannel.sendSlash(userId, 'balance');
+                        const balanceMessage = balanceResponse?.content;
+                        return balanceMessage || null;
+                    } catch (error) {
+                        console.error(`${colors.red}⛔ | Error retrieving balance:${colors.reset}`, error);
+                        return null;
+                    }
+                };
+
+                // Perform coinflip routine
+                const performCoinflipRoutine = async () => {
+                    try {
+                        const balanceMessage = await checkBalance(); // Check balance before starting coinflips
+                        if (!balanceMessage) return;
+
+                        console.log(`${colors.magenta}🟢 Starting: ${currentCoinflipCount} coinflips. Bet: ${currentBetValue}${colors.reset}`);
+
+                        // Create an array of coinflip promises
+                        const coinflipPromises = [];
+                        for (let i = 0; i < currentCoinflipCount; i++) {
+                            coinflipPromises.push(
+                                dmChannel.sendSlash(userId, 'coinflip', currentBetValue.toString(), 'Heads')
+                                    .catch(coinflipError => {
+                                        console.log(`${colors.yellow}⚠️ | Error during coinflip ${i + 1}, but continuing...${colors.reset}`, coinflipError);
+                                    })
+                            );
+                        }
+
+                        // Send all coinflip commands concurrently and wait for all to finish
+                        await Promise.all(coinflipPromises);
+
+                        // Increase the bet and restart the routine
+                        currentBetValue *= 10; // Increase the bet value after successful round
+                        saveCoinflipData(currentBetValue, currentCoinflipCount); // Save the updated bet value and coinflip count
+                        console.log(`${colors.green}✅ | Increasing bet value to ${currentBetValue}${colors.reset}`);
+                        performCoinflipRoutine(); // Recursively call the function with the new bet value
+
+                    } catch (error) {
+                        console.error(`${colors.red}⛔ | Error during coinflips:${colors.reset}`, error);
+                    }
+                };
+
+                performCoinflipRoutine();
+            })
+            .catch(err => console.error(`${colors.red}⛔ | Failed to create DM channel:${colors.reset}`, err));
+    } else {
+        console.log('User not found');
+    }
+});
 
 client.login(process.env.token);
